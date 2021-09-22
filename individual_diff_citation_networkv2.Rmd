@@ -1,0 +1,65 @@
+---
+title: "individual_diff_citation_network"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+  pdf_document: 
+    toc: true
+editor_options: 
+  chunk_output_type: console
+---
+
+First, I load the package bibliometrix.
+```{r packages}
+library(bibliometrix) 
+library(here)
+here()
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Next, I set the working directory and load the data.
+```{r setup, set_wd}
+file = ("individualdiff.txt")
+
+biblio <- convert2df(file = file, dbsource = "wos", format = "plaintext")
+```
+
+# Descriptive Analysis
+Next, I will conduct a descriptive analysis.
+```{r biblioAnalysis}
+results <- biblioAnalysis(biblio, sep = ";")
+
+S <- summary(object = results, k = 15, pause = FALSE)
+
+plot(x = results, k = 30, pause = FALSE)
+
+CR <- citations(biblio, field = "article", sep = ";")
+cbind(CR$Cited[1:10])
+```
+
+# Follow-up Analyses
+After that, we can conduct some more in-depth analyses.
+```{r citation analyses}
+topAU <- authorProdOverTime(biblio, k = 15, graph = TRUE)
+
+
+NetMatrix <- biblioNetwork(biblio, analysis = "co-occurrences", network = "keywords", sep = ";")
+
+net = networkPlot(NetMatrix, normalize = "association", weighted = T, n = 25, Title = "Keyword Co-occurrences", type = "fruchterman", size = T, edgesize = 5, labelsize = 0.7)
+
+CS <- conceptualStructure(biblio, field = "ID", method = "CA", minDegree = 4, clust = 5, stemming = FALSE, labelsize = 10, documents = 10)
+
+
+options(width = 130)
+histResults <- histNetwork(biblio, min.citations = 1, sep = ";")
+net <- histPlot(histResults, n = 25, size = 10, labelsize = 5)
+
+Cocite <- biblioNetwork(biblio, analysis = "co-citation", network = "references", sep = ";")
+
+net = networkPlot(Cocite, n = 25, Title = "Co-Citation Network", type = "fruchterman", size = T, remove.multiple = FALSE, labelsize = 0.7, edgesize = 5)
+
+```
+
